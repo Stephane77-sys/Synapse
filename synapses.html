@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synapses — Trouvez vos doubles intellectuels</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f5f0e8;
+    --accent: #c8502a;
+    --gold: #b89a5a;
+    --muted: #8a8070;
+    --surface: #ede8dc;
+    --border: #d4cfc4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .logo span {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  nav {
+    display: flex;
+    gap: 2.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  nav a { color: inherit; text-decoration: none; cursor: pointer; transition: color 0.2s; }
+  nav a:hover { color: var(--ink); }
+
+  /* HERO */
+  .hero {
+    padding: 6rem 4rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-text h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-text p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 480px;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .badge {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .cta-group { display: flex; gap: 1rem; align-items: center; }
+
+  .btn-primary {
+    padding: 0.9rem 2rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover { background: var(--accent); }
+
+  .btn-ghost {
+    padding: 0.9rem 2rem;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* SYNAPSE VISUALIZATION */
+  .hero-visual {
+    position: relative;
+    height: 480px;
+  }
+
+  .synapse-canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 3rem 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    padding: 2rem 4rem 5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .how-card {
+    background: var(--paper);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .how-card:hover { background: var(--surface); }
+
+  .how-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    color: var(--border);
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    line-height: 1;
+    font-style: italic;
+  }
+
+  .how-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+  }
+
+  .how-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+
+  .how-card p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* DEMO SECTION */
+  .demo {
+    padding: 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3rem;
+  }
+
+  .demo-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    letter-spacing: -0.02em;
+    max-width: 400px;
+    line-height: 1.1;
+  }
+
+  .demo-header h2 em { color: var(--accent); font-style: italic; }
+
+  .demo-header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    max-width: 300px;
+    text-align: right;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* TEXTAREA */
+  .input-zone {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    resize: none;
+    height: 120px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  textarea::placeholder { color: var(--border); }
+
+  .input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .char-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ANALYSIS RESULT */
+  .analysis-result {
+    display: none;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .analysis-result.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .profile-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  .profile-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .profile-type {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    letter-spacing: -0.02em;
+  }
+
+  .profile-score {
+    text-align: right;
+  }
+
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    color: var(--gold);
+    line-height: 1;
+    font-style: italic;
+  }
+
+  .score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .traits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.1);
+    margin-bottom: 2rem;
+  }
+
+  .trait {
+    background: var(--ink);
+    padding: 1.25rem;
+  }
+
+  .trait-bar-bg {
+    height: 2px;
+    background: rgba(255,255,255,0.15);
+    margin-bottom: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .trait-bar {
+    height: 100%;
+    background: var(--gold);
+    width: 0%;
+    transition: width 1s ease;
+  }
+
+  .trait-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 0.25rem;
+  }
+
+  .trait-value {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  /* MATCHES */
+  .matches-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 1.5rem;
+  }
+
+  .matches-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .match-card {
+    background: rgba(255,255,255,0.04);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .match-card:hover { background: rgba(255,255,255,0.08); }
+
+  .match-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  .match-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .match-location {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+
+  .match-topic {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .match-compat {
+    margin-top: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  /* MANIFESTO */
+  .manifesto {
+    padding: 6rem 4rem;
+    background: var(--ink);
+    color: var(--paper);
+    text-align: center;
+  }
+
+  .manifesto-inner { max-width: 700px; margin: 0 auto; }
+
+  .manifesto-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+  }
+
+  .manifesto h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  .manifesto p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+    margin-bottom: 3rem;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 4rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* LOADING */
+  .loading {
+    display: none;
+    padding: 3rem;
+    text-align: center;
+  }
+
+  .loading.visible { display: block; }
+
+  .loading-dots {
+    display: inline-flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.2s ease infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  .loading-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 768px) {
+    header { padding: 1.5rem 2rem; }
+    nav { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 3rem 2rem; gap: 2rem; }
+    .hero-visual { height: 300px; }
+    .how-grid { grid-template-columns: 1fr; }
+    .demo { padding: 2rem; }
+    .traits-grid { grid-template-columns: repeat(2, 1fr); }
+    .matches-grid { grid-template-columns: 1fr; }
+    .manifesto { padding: 4rem 2rem; }
+    footer { padding: 2rem; flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Syn<span>apses</span></div>
+  <nav>
+    <a>Concept</a>
+    <a>Comment ça marche</a>
+    <a>Manifeste</a>
+    <a onclick="scrollToDemo()">Essayer</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-badges">
+      <span class="badge">Open Source</span>
+      <span class="badge">Sans publicité</span>
+      <span class="badge">IA éthique</span>
+    </div>
+    <h1>Trouvez vos <em>doubles</em> intellectuels</h1>
+    <p>Synapses analyse votre façon de penser — pas vos opinions — pour vous connecter avec des esprits qui raisonnent comme vous, aux quatre coins du monde.</p>
+    <div class="cta-group">
+      <button class="btn-primary" onclick="scrollToDemo()">Tester ma pensée</button>
+      <button class="btn-ghost">Lire le manifeste</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <canvas class="synapse-canvas" id="synapseCanvas"></canvas>
+  </div>
+</section>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-text">Comment ça fonctionne</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="how-grid">
+    <div class="how-card">
+      <div class="how-number">01</div>
+      <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M24 4C13 4 4 13 4 24s9 20 20 20 20-9 20-20S35 4 24 4z"/>
+        <path d="M24 16v8l6 4"/>
+      </svg>
+      <h3>Exprimez-vous librement</h3>
+      <p>Partagez vos réflexions sur n'importe quel sujet — géopolitique, science, art, philosophie. L'IA analyse votre raisonnement, pas votre opinion.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-number">02</div>
+      <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="24" cy="24" r="8"/>
+        <path d="M24 4v6M24 38v6M4 24h6M38 24h6M9 9l4 4M35 35l4 4M9 39l4-4M35 13l4-4"/>
+      </svg>
+      <h3>L'IA cartographie votre pensée</h3>
+      <p>Cinq dimensions analysées : curiosité systémique, pensée transversale, tolérance à l'ambiguïté, déduction intuitive, profondeur réflexive.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-number">03</div>
+      <svg class="how-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="24" r="6"/>
+        <circle cx="36" cy="12" r="6"/>
+        <circle cx="36" cy="36" r="6"/>
+        <path d="M18 24h6M30 15l-6 6M30 33l-6-6"/>
+      </svg>
+      <h3>Rencontrez vos doubles</h3>
+      <p>Connectés non par leurs opinions mais par leur façon de penser. Un retraité français peut partager une synapse avec un étudiant sénégalais.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="demo" id="demo">
+  <div class="demo-header">
+    <h2>Testez votre <em>empreinte</em> intellectuelle</h2>
+    <p>Écrivez librement sur un sujet qui vous passionne. Minimum 3 lignes pour que l'analyse soit pertinente.</p>
+  </div>
+
+  <div class="input-zone">
+    <span class="input-label">Votre pensée du moment</span>
+    <textarea id="thoughtInput" placeholder="Exprimez-vous librement... sur la guerre, l'énergie, l'histoire, la technologie, la société. Ce qui vous préoccupe vraiment." maxlength="1000"></textarea>
+    <div class="input-footer">
+      <span class="char-count" id="charCount">0 / 1000 caractères</span>
+      <button class="btn-primary" onclick="analyzeThought()">Analyser ma pensée →</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="loading-text" id="loadingText">Analyse en cours...</div>
+  </div>
+
+  <div class="analysis-result" id="analysisResult">
+    <div class="profile-card">
+      <div class="profile-header">
+        <div>
+          <div class="profile-label">Votre profil de pensée</div>
+          <div class="profile-type" id="profileType">—</div>
+        </div>
+        <div class="profile-score">
+          <div class="score-number" id="compatScore">—</div>
+          <div class="score-label">Profils compatibles</div>
+        </div>
+      </div>
+
+      <div class="traits-grid" id="traitsGrid"></div>
+
+      <div class="matches-title">Vos doubles intellectuels potentiels</div>
+      <div class="matches-grid" id="matchesGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <div class="manifesto-inner">
+    <div class="manifesto-label">Notre manifeste</div>
+    <h2>"Le vrai gâchis intellectuel de notre époque, c'est que les bonnes questions restent sans interlocuteurs."</h2>
+    <p>Synapses est né d'une conversation entre un homme de 63 ans et une IA, un matin de mars 2026. Il a analysé une guerre, inventé des data centers sous-marins, et s'est demandé pourquoi personne ne l'écoutait. La réponse : il n'avait pas trouvé ses doubles. Synapses existe pour que ça ne se reproduise plus.</p>
+    <button class="btn-ghost" style="color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.2);">Rejoindre la liste d'attente</button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Synapses</div>
+  <div class="footer-note">Open source — Financé par fondations — Sans publicité — Version prototype 0.1</div>
+</footer>
+
+<script>
+// ---- CANVAS SYNAPSE ANIMATION ----
+const canvas = document.getElementById('synapseCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const nodes = [];
+const numNodes = 18;
+
+for (let i = 0; i < numNodes; i++) {
+  nodes.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r: Math.random() * 4 + 2,
+    active: Math.random() > 0.6
+  });
+}
+
+function drawSynapses() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw connections
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 160) {
+        const alpha = (1 - dist / 160) * 0.25;
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(200, 80, 42, ${alpha})`;
+        ctx.lineWidth = 0.8;
+        ctx.moveTo(nodes[i].x, nodes[i].y);
+        ctx.lineTo(nodes[j].x, nodes[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Draw nodes
+  nodes.forEach(node => {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+    ctx.fillStyle = node.active ? 'rgba(200, 80, 42, 0.8)' : 'rgba(184, 154, 90, 0.5)';
+    ctx.fill();
+
+    if (node.active) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r + 6, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(200, 80, 42, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    node.x += node.vx;
+    node.y += node.vy;
+
+    if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+    if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+  });
+
+  requestAnimationFrame(drawSynapses);
+}
+drawSynapses();
+
+// ---- CHAR COUNT ----
+const textarea = document.getElementById('thoughtInput');
+const charCount = document.getElementById('charCount');
+textarea.addEventListener('input', () => {
+  charCount.textContent = `${textarea.value.length} / 1000 caractères`;
+});
+
+// ---- SCROLL TO DEMO ----
+function scrollToDemo() {
+  document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ---- ANALYSIS ----
+const loadingMessages = [
+  "Analyse de votre structure de raisonnement...",
+  "Détection des patterns de pensée transversale...",
+  "Cartographie de votre profil intellectuel...",
+  "Recherche de doubles dans la base...",
+  "Calcul des compatibilités synaptiques..."
+];
+
+const profiles = [
+  { type: "Le Penseur Systémique", desc: "Vous reliez des domaines apparemment sans rapport avec une aisance naturelle." },
+  { type: "Le Questionneur Fondamental", desc: "Vous remontez toujours à la source, refusant les réponses superficielles." },
+  { type: "L'Architecte de Concepts", desc: "Vous construisez des structures logiques là où les autres voient du chaos." },
+  { type: "Le Visionnaire Pragmatique", desc: "Vos idées abstraites trouvent toujours une application concrète." },
+  { type: "L'Explorateur Transversal", desc: "Vous naviguez naturellement entre disciplines sans y être invité." }
+];
+
+const matchData = [
+  [
+    { name: "Mikael L.", location: "Oslo, Norvège", topic: "L'ingénierie marine comme réponse à la crise énergétique", compat: "94%", color: "#4a7c6f" },
+    { name: "Fatou D.", location: "Dakar, Sénégal", topic: "Gouvernance mondiale et spéculation alimentaire", compat: "91%", color: "#7c4a6f" },
+    { name: "Yuki T.", location: "Kyoto, Japon", topic: "La mémoire collective comme architecture sociale", compat: "88%", color: "#6f7c4a" }
+  ],
+  [
+    { name: "Paolo M.", location: "Naples, Italie", topic: "Le culte marial comme résistance populaire", compat: "92%", color: "#7c6f4a" },
+    { name: "Ana C.", location: "Lisbonne, Portugal", topic: "Géopolitique et interdépendances économiques", compat: "89%", color: "#4a6f7c" },
+    { name: "Klaus W.", location: "Berlin, Allemagne", topic: "IA et érosion de la pensée critique", compat: "87%", color: "#6f4a7c" }
+  ],
+  [
+    { name: "María G.", location: "Séville, Espagne", topic: "Histoire religieuse et psychologie collective", compat: "93%", color: "#7c4a4a" },
+    { name: "James O.", location: "Lagos, Nigeria", topic: "Systèmes énergétiques décentralisés", compat: "90%", color: "#4a7c4a" },
+    { name: "Léa M.", location: "Montréal, Canada", topic: "Éthique de l'IA et responsabilité générationnelle", compat: "86%", color: "#4a4a7c" }
+  ]
+];
+
+async function analyzeThought() {
+  const text = textarea.value.trim();
+  if (text.length < 50) {
+    textarea.style.borderBottom = '2px solid var(--accent)';
+    textarea.placeholder = "Écrivez un peu plus... au moins quelques lignes pour une analyse pertinente.";
+    return;
+  }
+
+  // Show loading
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('analysisResult').classList.remove('visible');
+
+  let msgIndex = 0;
+  const loadingInterval = setInterval(() => {
+    document.getElementById('loadingText').textContent = loadingMessages[msgIndex % loadingMessages.length];
+    msgIndex++;
+  }, 800);
+
+  // Call Claude API
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: `Analyse ce texte et génère un profil intellectuel en JSON uniquement, sans markdown ni backticks.
+
+Texte: "${text}"
+
+Réponds UNIQUEMENT avec ce JSON exact:
+{
+  "profileType": "nom du profil (ex: Le Penseur Systémique, L'Architecte de Concepts, etc.)",
+  "traits": [
+    {"name": "Curiosité", "value": "mot court", "score": 85},
+    {"name": "Transversalité", "value": "mot court", "score": 72},
+    {"name": "Profondeur", "value": "mot court", "score": 90},
+    {"name": "Intuition", "value": "mot court", "score": 78}
+  ],
+  "compatCount": "nombre entre 847 et 12450",
+  "insight": "une phrase courte et précise sur ce qui caractérise ce raisonnement"
+}`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    clearInterval(loadingInterval);
+
+    let result;
+    try {
+      const raw = data.content[0].text.trim();
+      result = JSON.parse(raw);
+    } catch(e) {
+      result = {
+        profileType: profiles[Math.floor(Math.random() * profiles.length)].type,
+        traits: [
+          { name: "Curiosité", value: "Systémique", score: 87 },
+          { name: "Transversalité", value: "Élevée", score: 79 },
+          { name: "Profondeur", value: "Analytique", score: 92 },
+          { name: "Intuition", value: "Forte", score: 83 }
+        ],
+        compatCount: "3 241",
+        insight: "Raisonnement transversal remarquable"
+      };
+    }
+
+    showResult(result);
+
+  } catch(error) {
+    clearInterval(loadingInterval);
+    // Fallback
+    const fallback = {
+      profileType: profiles[Math.floor(Math.random() * profiles.length)].type,
+      traits: [
+        { name: "Curiosité", value: "Systémique", score: 87 },
+        { name: "Transversalité", value: "Élevée", score: 79 },
+        { name: "Profondeur", value: "Analytique", score: 92 },
+        { name: "Intuition", value: "Forte", score: 83 }
+      ],
+      compatCount: "3 241",
+      insight: "Pensée transversale et questionnement fondamental"
+    };
+    showResult(fallback);
+  }
+}
+
+function showResult(result) {
+  document.getElementById('loading').classList.remove('visible');
+
+  document.getElementById('profileType').textContent = result.profileType;
+  document.getElementById('compatScore').textContent = result.compatCount;
+
+  // Traits
+  const traitsGrid = document.getElementById('traitsGrid');
+  traitsGrid.innerHTML = result.traits.map(t => `
+    <div class="trait">
+      <div class="trait-bar-bg">
+        <div class="trait-bar" data-score="${t.score}"></div>
+      </div>
+      <div class="trait-name">${t.name}</div>
+      <div class="trait-value">${t.value}</div>
+    </div>
+  `).join('');
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.trait-bar').forEach(bar => {
+      bar.style.width = bar.dataset.score + '%';
+    });
+  }, 100);
+
+  // Matches
+  const matchSet = matchData[Math.floor(Math.random() * matchData.length)];
+  const matchesGrid = document.getElementById('matchesGrid');
+  matchesGrid.innerHTML = matchSet.map(m => `
+    <div class="match-card">
+      <div class="match-avatar" style="background: ${m.color}22; color: ${m.color}; border: 1px solid ${m.color}44;">
+        ${m.name.charAt(0)}
+      </div>
+      <div class="match-name">${m.name}</div>
+      <div class="match-location">${m.location}</div>
+      <div class="match-topic">"${m.topic}"</div>
+      <div class="match-compat">⟶ ${m.compat} de compatibilité</div>
+    </div>
+  `).join('');
+
+  document.getElementById('analysisResult').classList.add('visible');
+  document.getElementById('analysisResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
